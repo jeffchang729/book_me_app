@@ -27,7 +27,7 @@ if (flutterVersionName == null) {
 
 android {
     // 🔥 唯一需要改的地方
-    namespace "com.example.fitness"
+    namespace "com.bookme.app"
     
     compileSdk flutter.compileSdkVersion
     ndkVersion flutter.ndkVersion
@@ -47,7 +47,7 @@ android {
 
     defaultConfig {
         // 🔥 唯一需要改的地方
-        applicationId "com.example.fitness"
+        applicationId "com.bookme.app"
         
         minSdkVersion flutter.minSdkVersion
         targetSdkVersion flutter.targetSdkVersion

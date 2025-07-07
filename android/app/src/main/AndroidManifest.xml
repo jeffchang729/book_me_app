@@ -1,41 +1,46 @@
-<!-- android/app/src/main/AndroidManifest.xml -->
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- android/app/src/main/AndroidManifest.xml -->
+    <!-- 這個檔案定義了 Android 應用程式的基礎設定、權限和組件。 -->
+    <!-- 請確保 XML 語法正確無誤。 -->
+    <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+        package="com.bookme.app"> <!-- [修正] 應用程式的套件名稱。請務必替換為您在 Firebase 中註冊的實際套件名稱。 -->
 
-    <!-- [核心權限] 授予應用程式存取網際網路的權限。 -->
-    <!-- 這是讓天氣 API 等網路功能正常運作的關鍵。 -->
-    <uses-permission android:name="android.permission.INTERNET" />
+        <!-- [核心權限] 授予應用程式存取網際網路的權限。 -->
+        <!-- 這是讓網路功能 (如 Firebase、API 請求) 正常運作的關鍵權限。 -->
+        <uses-permission android:name="android.permission.INTERNET" />
 
-    <application
-        android:name="${applicationName}"
-        android:label="TELL ME" 
-        android:icon="@mipmap/ic_launcher">
+        <application
+            android:name="${applicationName}"
+            android:label="BookMe"
+            android:icon="@mipmap/ic_launcher">
 
-        <!-- App 的主要進入點 (Activity) -->
-        <activity
-            android:name=".MainActivity"
-            android:exported="true"
-            android:launchMode="singleTop"
-            android:theme="@style/LaunchTheme"
-            android:configChanges="orientation|keyboardHidden|keyboard|screenSize|smallestScreenSize|locale|layoutDirection|fontScale|screenLayout|density|uiMode"
-            android:hardwareAccelerated="true"
-            android:windowSoftInputMode="adjustResize">
+            <!-- App 的主要進入點 (Activity)。 -->
+            <activity
+                android:name=".MainActivity"
+                android:exported="true"
+                android:launchMode="singleTop"
+                android:theme="@style/LaunchTheme"
+                android:configChanges="orientation|keyboardHidden|keyboard|screenSize|smallestScreenSize|locale|layoutDirection|fontScale|screenLayout|density|uiMode"
+                android:hardwareAccelerated="true"
+                android:windowSoftInputMode="adjustResize">
+                
+                <!-- 指定 Flutter UI 顯示時的正常主題。 -->
+                <meta-data
+                  android:name="io.flutter.embedding.android.NormalTheme"
+                  android:resource="@style/NormalTheme"
+                  />
+                
+                <!-- Intent Filter，將此 Activity 標記為 App 的主入口。 -->
+                <!-- 這表示當用戶點擊應用程式圖示時，會啟動這個 Activity。 -->
+                <intent-filter>
+                    <action android:name="android.intent.action.MAIN"/>
+                    <category android:name="android.intent.category.LAUNCHER"/>
+                </intent-filter>
+            </activity>
             
-            <!-- 指定 Flutter UI 顯示時的正常主題 -->
+            <!-- Flutter 工具使用的元數據，請勿刪除。 -->
             <meta-data
-              android:name="io.flutter.embedding.android.NormalTheme"
-              android:resource="@style/NormalTheme"
-              />
-            
-            <!-- Intent Filter，將此 Activity 標記為 App 的主入口 -->
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN"/>
-                <category android:name="android.intent.category.LAUNCHER"/>
-            </intent-filter>
-        </activity>
-        
-        <!-- Flutter 工具使用的元數據，請勿刪除 -->
-        <meta-data
-            android:name="flutterEmbedding"
-            android:value="2" />
-    </application>
-</manifest>
+                android:name="flutterEmbedding"
+                android:value="2" />
+        </application>
+    </manifest>
+    

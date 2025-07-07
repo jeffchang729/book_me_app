@@ -42,17 +42,17 @@ class DefaultFirebaseOptions {
 
   static const FirebaseOptions web = FirebaseOptions(
     apiKey: 'AIzaSyAgRMyhBkKofJFi38zA1h7eJYKS8_S48qA',
-    appId: '1:613638259363:web:91f376b7a534b53e543516',
+    appId: '1:613638259363:web:21966f90395b9b30543516',
     messagingSenderId: '613638259363',
     projectId: 'book-me-app-1f310',
     authDomain: 'book-me-app-1f310.firebaseapp.com',
     storageBucket: 'book-me-app-1f310.firebasestorage.app',
-    measurementId: 'G-WCWD7777GW',
+    measurementId: 'G-JFQT5MYM08',
   );
 
   static const FirebaseOptions android = FirebaseOptions(
     apiKey: 'AIzaSyAbRuzFxQldxyUXntDvQzbF-JNMjl4H7Qw',
-    appId: '1:613638259363:android:651ffd38d4f7a733543516',
+    appId: '1:613638259363:android:de7dda48cebe84ce543516',
     messagingSenderId: '613638259363',
     projectId: 'book-me-app-1f310',
     storageBucket: 'book-me-app-1f310.firebasestorage.app',
