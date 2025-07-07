@@ -34,6 +34,8 @@ dependencies:
   # 用於從相簿或相機選擇圖片
   image_picker: ^1.0.7 # 請檢查 pub.dev 獲取最新穩定版本
 
+  # [重要新增] Google 登入套件
+  google_sign_in: ^6.2.1 # 請檢查 pub.dev 獲取最新穩定版本
 
 dev_dependencies:
   flutter_test:

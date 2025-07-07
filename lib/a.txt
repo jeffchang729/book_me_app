@@ -2,51 +2,36 @@
 ºÏºÐ°Ï§Ç¸¹¬° E059-CAF4
 D:.
 ¢x  a.txt
+¢x  firebase_options.dart
 ¢x  main.dart
 ¢x  
-¢u¢wapp
-¢x      app_container.dart
-¢x      bottom_bar_item.dart
-¢x      navigation_widgets.dart
-¢x      
 ¢u¢wcore
-¢x  ¢u¢wconfig
-¢x  ¢x      app_config.dart
+¢x      app_config.dart
+¢x      app_container.dart
+¢x      app_controller.dart
+¢x      app_theme.dart
+¢x      app_utils.dart
+¢x      bottom_bar_item.dart
+¢x      dependency_injection.dart
+¢x      fake_data_service.dart
+¢x      navigation_widgets.dart
+¢x      storage_service.dart
+¢x      
+¢u¢wfeatures
+¢x  ¢u¢wauth
+¢x  ¢x      auth_controller.dart
+¢x  ¢x      auth_screen.dart
+¢x  ¢x      auth_service.dart
 ¢x  ¢x      
-¢x  ¢u¢wservices
-¢x  ¢x      dependency_injection.dart
-¢x  ¢x      fake_data_service.dart
-¢x  ¢x      storage_service.dart
-¢x  ¢x      
-¢x  ¢u¢wtheme
-¢x  ¢x      app_theme.dart
-¢x  ¢x      
-¢x  ¢|¢wutils
-¢x          app_utils.dart
+¢x  ¢|¢wsearch
+¢x          search_controller.dart
+¢x          search_models.dart
+¢x          search_screen.dart
 ¢x          
-¢|¢wfeatures
-    ¢u¢whome
-    ¢x      app_controller.dart
-    ¢x      home_screen.dart
-    ¢x      summary_card.dart
-    ¢x      
-    ¢u¢wnews
-    ¢x      feed_models.dart
-    ¢x      news_article_screen.dart
-    ¢x      post_card_news.dart
-    ¢x      
-    ¢u¢wsearch
-    ¢x      search_controller.dart
-    ¢x      search_models.dart
-    ¢x      search_screen.dart
-    ¢x      
-    ¢u¢wstock
-    ¢x      post_card_stock.dart
-    ¢x      stock_detail_screen.dart
-    ¢x      stock_grid_item.dart
-    ¢x      
-    ¢|¢wweather
-            post_card_weather.dart
-            weather_models.dart
-            weather_service.dart
-            
+¢|¢wscreens
+        activity_screen.dart
+        explore_screen.dart
+        home_feed_screen.dart
+        main_screen.dart
+        profile_screen.dart
+        
