@@ -1,0 +1,86 @@
+# pubspec.yaml
+# [API串接 V6.5 - 整合最終版]
+# 功能：整合所有必要的依賴套件與專案設定。
+name: book_me_app
+description: A personalized information dashboard app.
+
+publish_to: "none"
+
+version: 1.0.0+1
+
+environment:
+  sdk: ">=3.0.0 <4.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  get: ^4.6.6
+  shared_preferences: ^2.2.2
+  intl: ^0.19.0
+  dio: ^5.4.3+1
+  dio_cookie_manager: ^3.1.1
+  cookie_jar: ^4.0.8
+  cupertino_icons: ^1.0.2
+  font_awesome_flutter: ^10.6.0
+  # Firebase 核心套件 (所有 Firebase 服務的基礎)
+  firebase_core: ^2.27.0 # 請檢查 pub.dev 獲取最新穩定版本
+  # 用於使用者認證 (註冊、登入、登出)
+  firebase_auth: ^4.17.8 # 請檢查 pub.dev 獲取最新穩定版本
+  # NoSQL 資料庫，用於儲存讀書心得文本資料、使用者資料等
+  cloud_firestore: ^4.15.8 # 請檢查 pub.dev 獲取最新穩定版本
+  # 用於儲存圖片 (讀書心得圖片、用戶頭像)
+  firebase_storage: ^11.6.9 # 請檢查 pub.dev 獲取最新穩定版本
+  # 用於從相簿或相機選擇圖片
+  image_picker: ^1.0.7 # 請檢查 pub.dev 獲取最新穩定版本
+
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^2.0.0
+  flutter_launcher_icons: ^0.13.1
+
+# Flutter Launcher Icons 配置 (完整版)
+flutter_icons:
+  android: "launcher_icon"
+  ios: true
+  image_path: "assets/icons/app_icon.png"
+  min_sdk_android: 21
+  web:
+    generate: true
+    image_path: "assets/icons/app_icon.png"
+    background_color: "#FFFFFF"
+    theme_color: "#5685FF" # 改為我們的主色調
+  windows:
+    generate: true
+    image_path: "assets/icons/app_icon.png"
+    icon_size: 48
+
+flutter:
+  uses-material-design: true
+
+  # 資源路徑宣告
+  assets:
+    - assets/images/
+    - assets/icons/
+    - assets/fonts/
+
+  # 字型宣告
+  fonts:
+    - family: WorkSans
+      fonts:
+        - asset: assets/fonts/WorkSans-Regular.ttf
+        - asset: assets/fonts/WorkSans-Medium.ttf
+          weight: 500
+        - asset: assets/fonts/WorkSans-SemiBold.ttf
+          weight: 600
+        - asset: assets/fonts/WorkSans-Bold.ttf
+          weight: 700
+    - family: Roboto
+      fonts:
+        - asset: assets/fonts/Roboto-Regular.ttf
+        - asset: assets/fonts/Roboto-Medium.ttf
+          weight: 500
+        - asset: assets/fonts/Roboto-Bold.ttf
+          weight: 700

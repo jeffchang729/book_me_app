@@ -1,0 +1,89 @@
+// .gitignore
+// Git 版本控制忽略檔案配置
+
+# -------------------------------------------------------------
+# 1. 常用作業系統與編輯器相關 (Miscellaneous)
+# -------------------------------------------------------------
+*.class                 // Java 編譯產生的類別檔案
+*.log                   // 日誌檔案
+*.pyc                   // Python 編譯產生的快取
+*.swp                   // Vim 編輯器交換檔
+.DS_Store               // macOS 特有檔案，用於儲存資料夾的自定義屬性
+.atom/                  // Atom 編輯器相關設定
+.buildlog/              // 建構日誌資料夾
+.history                // VS Code 或其他編輯器的歷史記錄資料夾
+.svn/                   // Subversion 版本控制系統的資料夾
+migrate_working_dir/    // 可能的遷移工作目錄
+
+
+# -------------------------------------------------------------
+# 2. IDE 相關 (IntelliJ / Android Studio / VS Code)
+# -------------------------------------------------------------
+*.iml                   // IntelliJ IDEA 模組檔案
+*.ipr                   // IntelliJ IDEA 專案檔案
+*.iws                   // IntelliJ IDEA 工作區檔案
+.idea/                  // IntelliJ IDEA / Android Studio 的專案設定資料夾
+
+# .vscode/                // VS Code 設定資料夾，通常建議保留在版本控制中 (已註釋掉，按您原意)
+                        // 如果您想忽略 .vscode 資料夾，取消此行的註釋
+
+
+# -------------------------------------------------------------
+# 3. Flutter / Dart / Pub 相關 (Build Artifacts, Cache)
+# -------------------------------------------------------------
+**/doc/api/             // Dartdoc 自動生成的 API 文件
+**/ios/Flutter/.last_build_id // Flutter iOS 建構的快取 ID
+.dart_tool/             // Dart 工具生成的快取和配置
+.flutter-plugins        // Flutter 插件清單檔案
+.flutter-plugins-dependencies // Flutter 插件的依賴關係檔案
+.packages               // Dart 的套件解析快取檔案
+.pub-cache/             // Pub 套件管理器的本地快取目錄 (通常位於用戶主目錄)
+.pub/                   // Pub 套件管理器的臨時目錄
+/build/                 // Flutter 的建構輸出目錄，包含所有編譯產物
+
+
+# -------------------------------------------------------------
+# 4. 特定平台編譯產物 / 自動生成檔案
+# -------------------------------------------------------------
+# Android
+/android/app/debug      // Android 除錯版本輸出
+/android/app/profile    // Android Profile 版本輸出
+/android/app/release    // Android 發布版本輸出
+
+# Localization (i18n) 自動生成檔案
+lib/generated/l10n.dart         // Flutter 國際化自動生成的主檔案
+lib/generated/intl/messages_all.dart // 國際化訊息的總覽檔案
+lib/generated/intl/messages_en.dart  // 英語訊息檔案
+lib/generated/intl/messages_id_ID.dart // 印尼語訊息檔案 (根據您原檔案)
+lib/generated/intl/messages_th_TH.dart // 泰語訊息檔案 (根據您原檔案)
+lib/generated/intl/messages_vi_VN.dart // 越南語訊息檔案 (根據您原檔案)
+lib/generated/intl/messages_zh_TW.dart // 繁體中文訊息檔案 (根據您原檔案)
+
+# Plugin Registrant 自動生成檔案 (各種平台的插件註冊文件)
+# 注意：這些路徑已去重並規範化
+android/app/src/main/java/io/flutter/plugins/GeneratedPluginRegistrant.java // Android Java 插件註冊 (如果使用 Java)
+android/app/src/main/kotlin/io/flutter/plugins/GeneratedPluginRegistrant.kt // Android Kotlin 插件註冊 (如果使用 Kotlin)
+ios/Runner/GeneratedPluginRegistrant.m // iOS Objective-C 插件註冊
+ios/Runner/GeneratedPluginRegistrant.h // iOS Objective-C 插件註冊
+macos/Flutter/GeneratedPluginRegistrant.swift // macOS Swift 插件註冊
+linux/flutter/generated_plugin_registrant.cc // Linux C++ 插件註冊
+linux/flutter/generated_plugins.cmake     // Linux CMake 插件定義
+windows/flutter/generated_plugin_registrant.cc // Windows C++ 插件註冊
+windows/flutter/generated_plugins.cmake   // Windows CMake 插件定義
+
+
+# -------------------------------------------------------------
+# 5. Symbolication and Obfuscation (符號化與混淆相關)
+# -------------------------------------------------------------
+app.*.symbols           // 符號表檔案 (用於崩潰報告解析)
+app.*.map.json          // 混淆對應檔案
+
+
+# -------------------------------------------------------------
+# 6. 其他可能需要忽略的檔案或資料夾 (根據專案需求)
+# -------------------------------------------------------------
+.env                    // 環境變數檔案，通常包含敏感資訊，絕不能上傳
+.env.* // 變種環境變數檔案
+.secrets/               // 敏感資訊資料夾
+*.key                   // 私鑰檔案
+*.pem                   // 憑證檔案

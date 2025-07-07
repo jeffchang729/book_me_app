@@ -1,0 +1,46 @@
+{
+  "project_info": {
+    "project_number": "613638259363",
+    "project_id": "book-me-app-1f310",
+    "storage_bucket": "book-me-app-1f310.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:613638259363:android:651ffd38d4f7a733543516",
+        "android_client_info": {
+          "package_name": "com.example.fitness"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "613638259363-akos4m7pj6a6cbv5g2ase94od83og885.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAbRuzFxQldxyUXntDvQzbF-JNMjl4H7Qw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "613638259363-akos4m7pj6a6cbv5g2ase94od83og885.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "613638259363-rmupiakdkkqjfi59lerl1rv83g2j70i0.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.bestFlutterUiTemplates"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

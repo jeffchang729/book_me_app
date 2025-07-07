@@ -1,0 +1,52 @@
+列出磁碟區 Data 的資料夾 PATH
+磁碟區序號為 E059-CAF4
+D:.
+│  a.txt
+│  main.dart
+│  
+├─app
+│      app_container.dart
+│      bottom_bar_item.dart
+│      navigation_widgets.dart
+│      
+├─core
+│  ├─config
+│  │      app_config.dart
+│  │      
+│  ├─services
+│  │      dependency_injection.dart
+│  │      fake_data_service.dart
+│  │      storage_service.dart
+│  │      
+│  ├─theme
+│  │      app_theme.dart
+│  │      
+│  └─utils
+│          app_utils.dart
+│          
+└─features
+    ├─home
+    │      app_controller.dart
+    │      home_screen.dart
+    │      summary_card.dart
+    │      
+    ├─news
+    │      feed_models.dart
+    │      news_article_screen.dart
+    │      post_card_news.dart
+    │      
+    ├─search
+    │      search_controller.dart
+    │      search_models.dart
+    │      search_screen.dart
+    │      
+    ├─stock
+    │      post_card_stock.dart
+    │      stock_detail_screen.dart
+    │      stock_grid_item.dart
+    │      
+    └─weather
+            post_card_weather.dart
+            weather_models.dart
+            weather_service.dart
+            
