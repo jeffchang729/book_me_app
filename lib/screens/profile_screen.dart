@@ -40,6 +40,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     super.initState();
     _loadProfileData(); // 載入個人檔案數據
     // 監聽當前登入用戶的變化，以更新追蹤按鈕狀態
+    // 當 authController.currentUser 或 currentAppUser 改變時，重新檢查追蹤狀態
     ever(authController.currentUser, (_) => _checkFollowingStatus());
     ever(authController.currentAppUser, (_) => _checkFollowingStatus());
 
@@ -52,13 +53,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
     super.didUpdateWidget(oldWidget);
     if (widget.userId != oldWidget.userId) {
       _loadProfileData(); // 當 userId 改變時重新載入數據
-      bookReviewController.startUserReviewsListener(widget.userId); // 重新監聽新用戶的心得
+      // 停止舊用戶的監聽，開始新用戶的監聽
+      bookReviewController.stopUserReviewsListener();
+      bookReviewController.startUserReviewsListener(widget.userId); 
     }
   }
 
   @override
   void dispose() {
-    // 在頁面銷毀時停止監聽用戶心得
+    // 在頁面銷毀時停止監聽用戶心得，避免記憶體洩漏
     bookReviewController.stopUserReviewsListener();
     super.dispose();
   }
@@ -66,7 +69,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   // 載入用戶個人檔案數據
   Future<void> _loadProfileData() async {
     _isProfileLoading.value = true; // 開始載入
-    _profileUser.value = null; // 清空舊資料
+    _profileUser.value = null; // 清空舊資料，避免顯示過時內容
     try {
       final user = await userService.fetchUser(widget.userId);
       _profileUser.value = user; // 更新響應式變數
@@ -81,17 +84,25 @@ class _ProfileScreenState extends State<ProfileScreen> {
   // 檢查當前登入用戶是否已追蹤此檔案用戶
   void _checkFollowingStatus() {
     final currentAppUser = authController.currentAppUser.value;
-    if (_profileUser.value != null && currentAppUser != null && currentAppUser.userId != _profileUser.value!.userId) {
-      _isFollowing.value = currentAppUser.following.contains(_profileUser.value!.userId);
+    // 確保 profileUser 和 currentAppUser 都不是 null
+    if (_profileUser.value != null && currentAppUser != null) {
+      // 且不是查看自己的檔案
+      if (currentAppUser.userId != _profileUser.value!.userId) {
+        _isFollowing.value = currentAppUser.following.contains(_profileUser.value!.userId);
+      } else {
+        _isFollowing.value = false; // 如果是自己，不顯示追蹤按鈕
+      }
     } else {
-      _isFollowing.value = false; // 如果是自己或未登入，則不顯示追蹤狀態
+      _isFollowing.value = false; // 如果未登入或 profileUser 為空，不顯示追蹤狀態
     }
   }
 
   // 追蹤/取消追蹤邏輯
   Future<void> _toggleFollowUser() async {
     final currentUserId = authController.currentUser.value?.uid;
-    if (currentUserId == null || _profileUser.value == null) {
+    final currentAppUser = authController.currentAppUser.value; // 獲取當前登入用戶的 AppUser
+    
+    if (currentUserId == null || _profileUser.value == null || currentAppUser == null) {
       Get.snackbar('提示', '請先登入才能進行追蹤操作。', snackPosition: SnackPosition.BOTTOM, backgroundColor: Get.theme.colorScheme.secondary, colorText: Get.theme.colorScheme.onSecondary);
       return;
     }
@@ -101,14 +112,23 @@ class _ProfileScreenState extends State<ProfileScreen> {
       return;
     }
 
-    // 可以在這裡顯示局部 loading
+    // 可以考慮在這裡顯示一個局部 loading
     final success = await userService.toggleFollow(currentUserId, widget.userId, _isFollowing.value);
     if (success) {
+      // 追蹤/取消追蹤成功後，更新本地狀態和兩個用戶的資料
       _isFollowing.toggle(); // 更新本地追蹤狀態
+      
       // 成功後重新載入兩個用戶的 AppUser 資料，確保數量更新
-      await authController.fetchAndUpdateCurrentUserProfile(); // 更新當前用戶的 AppUser
-      // _loadProfileData() 會重新載入此檔案用戶的 AppUser 和心得，以反映 follower 數量變化
-      await _loadProfileData(); 
+      await authController.fetchAndUpdateCurrentUserProfile(); // 更新當前用戶的 AppUser (會更新 following 列表)
+      await _loadProfileData(); // 重新載入此檔案用戶的 AppUser (會更新 followers 列表)
+      
+      Get.snackbar(
+        _isFollowing.value ? '追蹤成功' : '已取消追蹤', 
+        _isFollowing.value ? '您已追蹤 ${_profileUser.value!.userName}' : '您已取消追蹤 ${_profileUser.value!.userName}',
+        snackPosition: SnackPosition.BOTTOM, 
+        backgroundColor: Get.theme.primaryColor, 
+        colorText: Get.theme.colorScheme.onPrimary
+      );
     } else {
       Get.snackbar('錯誤', '追蹤操作失敗，請稍後再試。', snackPosition: SnackPosition.BOTTOM, backgroundColor: Get.theme.colorScheme.error, colorText: Get.theme.colorScheme.onError);
     }
@@ -129,7 +149,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           onPressed: () => Get.back(),
         ),
         title: Obx(() => Text(
-              _profileUser.value?.userName ?? '載入中...', // 觀察 _profileUser
+              _profileUser.value?.userName ?? (isCurrentUserProfile ? '我的檔案' : '載入中...'), // 觀察 _profileUser，並在載入自己檔案時顯示預設文字
               style: theme.textTheme.headlineSmall?.copyWith(
                 fontWeight: FontWeight.bold,
                 color: theme.textTheme.bodyLarge?.color,
@@ -137,7 +157,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             )),
         centerTitle: false,
         actions: [
-          if (isCurrentUserProfile)
+          if (isCurrentUserProfile) // 只有當前用戶才能看到設定按鈕
             IconButton(
               icon: Icon(Icons.settings_outlined, color: theme.iconTheme.color),
               onPressed: () {
@@ -150,7 +170,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         final AppUser? user = _profileUser.value;
 
         if (user == null || _isProfileLoading.value) { // [修正] 顯示 _isProfileLoading
-          // 如果用戶資料為空，顯示載入中或錯誤訊息
+          // 如果用戶資料為空或正在載入，顯示載入中
           return Center(
             child: CircularProgressIndicator(color: theme.primaryColor),
           );
@@ -236,7 +256,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             textAlign: TextAlign.center,
                           ),
                           const SizedBox(height: 10),
-                          if (isCurrentUserProfile)
+                          if (isCurrentUserProfile) // 只有自己的檔案才顯示提示發布的文字
                             Text(
                               '點擊下方加號按鈕，分享您的第一篇心得吧。',
                               style: theme.textTheme.bodyMedium,

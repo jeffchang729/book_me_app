@@ -3,7 +3,7 @@
 
 import 'package:get/get.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:book_me_app/models/app_user.dart';
+import 'package:book_me_app/models/app_user.dart'; // [修正] 路徑已更新
 import 'package:book_me_app/features/auth/auth_service.dart';
 import 'package:book_me_app/features/user/user_service.dart'; // 引入用戶服務
 import 'dart:async';
@@ -19,9 +19,10 @@ class AuthController extends GetxController {
 
   // 觀察者變數，用於控制 AuthScreen 的模式：false 為登入模式，true 為註冊模式
   final RxBool isRegisterMode = false.obs; 
+  bool hasBeenInitialized = false; // [新增] 用於標記 AuthController 是否已根據 initialRegisterMode 初始化過
 
   final Rx<User?> _currentUser = Rx<User?>(null); 
-  StreamSubscription<User?>? _userSubscription; 
+  StreamSubscription<User?>? _authStateSubscription; 
 
   Rx<User?> get currentUser => _currentUser;
 
@@ -32,23 +33,23 @@ class AuthController extends GetxController {
   @override
   void onInit() {
     super.onInit();
-    // 監聽 Firebase Authentication 的用戶狀態變化
-    _userSubscription = _authService.user.listen((user) async {
+    // 監聽 Firebase Auth 的用戶狀態變化
+    _authStateSubscription = _authService.user.listen((user) async {
       _currentUser.value = user;
       if (user != null) {
         // 如果有登入用戶，確保在 Firestore 中創建或更新其 AppUser 資料
-        await _userService.createUserProfile(user);
-        // 載入完整的 AppUser 資料
+        // 然後載入完整的 AppUser 資料
+        await _userService.createUserProfile(user); // 確保 profile 存在
         _currentAppUser.value = await _userService.fetchUser(user.uid);
       } else {
-        _currentAppUser.value = null;
+        _currentAppUser.value = null; // 用戶登出時清空 AppUser
       }
     });
   }
 
   @override
   void onClose() {
-    _userSubscription?.cancel(); // 在控制器關閉時取消訂閱，防止記憶體洩漏
+    _authStateSubscription?.cancel(); // 在控制器關閉時取消訂閱，防止記憶體洩漏
     super.onClose();
   }
 
@@ -91,8 +92,8 @@ class AuthController extends GetxController {
         '註冊成功', 
         '歡迎加入 BookMe！', 
         snackPosition: SnackPosition.BOTTOM, 
-        backgroundColor: Get.theme.primaryColor, 
-        colorText: Get.theme.colorScheme.onPrimary
+        backgroundColor: Get.theme.primaryColor, // 使用主題的主要顏色
+        colorText: Get.theme.colorScheme.onPrimary // 主要顏色上的文字顏色
       );
     }
     isLoading.value = false;
@@ -113,8 +114,8 @@ class AuthController extends GetxController {
         '登入成功', 
         '歡迎回來！', 
         snackPosition: SnackPosition.BOTTOM, 
-        backgroundColor: Get.theme.primaryColor, 
-        colorText: Get.theme.colorScheme.onPrimary
+        backgroundColor: Get.theme.primaryColor, // 使用主題的主要顏色
+        colorText: Get.theme.colorScheme.onPrimary // 主要顏色上的文字顏色
       );
     }
     isLoading.value = false;

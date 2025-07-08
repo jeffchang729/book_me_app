@@ -32,6 +32,7 @@ class _HomeFeedScreenState extends State<HomeFeedScreen> {
     // [修正] 在頁面初始化時，開始監聽公開的讀書心得
     bookReviewController.startPublicReviewsListener();
     // 監聽當前用戶的追蹤列表變化
+    // 當 currentAppUser 改變時（例如登入/登出，或追蹤/取消追蹤成功導致其更新），重新獲取追蹤列表
     ever(authController.currentAppUser, (_) {
       _fetchFollowingUsers();
     });
@@ -40,6 +41,7 @@ class _HomeFeedScreenState extends State<HomeFeedScreen> {
 
   // 獲取當前用戶追蹤的用戶資料
   Future<void> _fetchFollowingUsers() async {
+    // 如果用戶未登入或 currentAppUser 為空，則清空追蹤列表
     if (authController.currentUser.value == null || authController.currentAppUser.value == null) {
       _followingUsers.clear();
       return;
@@ -53,7 +55,7 @@ class _HomeFeedScreenState extends State<HomeFeedScreen> {
         users.add(user);
       }
     }
-    _followingUsers.assignAll(users);
+    _followingUsers.assignAll(users); // 更新追蹤用戶列表
   }
 
   @override
@@ -90,7 +92,7 @@ class _HomeFeedScreenState extends State<HomeFeedScreen> {
       body: Column( // 使用 Column 包裹，以便在頂部添加朋友列表
         children: [
           // 朋友小圖案列表 (類似 Instagram 限時動態)
-          Obx(() => _followingUsers.isEmpty && authController.currentUser.value != null
+          Obx(() => _followingUsers.isEmpty && authController.currentUser.value != null // 只有在登入狀態下才判斷是否為空
               ? Container(
                   padding: const EdgeInsets.all(16.0),
                   alignment: Alignment.centerLeft,
@@ -105,7 +107,7 @@ class _HomeFeedScreenState extends State<HomeFeedScreen> {
           Expanded( // Expanded 包裹原來的 body 內容
             child: Obx(() {
               if (bookReviewController.isLoading.value && bookReviewController.publicBookReviews.isEmpty) {
-                return const Center(child: CircularProgressIndicator()); // 顯示載入指示器
+                return Center(child: CircularProgressIndicator(color: theme.primaryColor)); // 顯示載入指示器
               } else if (bookReviewController.publicBookReviews.isEmpty) {
                 return Center(
                   child: Column(
@@ -132,7 +134,8 @@ class _HomeFeedScreenState extends State<HomeFeedScreen> {
                 return RefreshIndicator(
                   // [修正] 下拉刷新時，重新啟動監聽，以強制刷新數據
                   onRefresh: () async {
-                    bookReviewController.startPublicReviewsListener();
+                    // bookReviewController.stopPublicReviewsListener(); // 這個方法現在已經存在於 controller
+                    await bookReviewController.startPublicReviewsListener();
                   },
                   child: ListView.builder(
                     padding: const EdgeInsets.symmetric(vertical: 8.0),
@@ -214,9 +217,13 @@ class _BookReviewPostCard extends StatelessWidget {
     return Obx(() {
       // 從 controller 的公開心得列表 (或用戶心得列表) 中獲取最新狀態的 review
       // 這樣確保 UI 總是顯示最新的 likesCount 和 commentsCount
-      final BookReview displayReview = bookReviewController.publicBookReviews.firstWhereOrNull((r) => r.id == review.id)
-          ?? bookReviewController.userBookReviews.firstWhereOrNull((r) => r.id == review.id)
-          ?? review; // Fallback to original if not found
+      final BookReview? displayReview = bookReviewController.publicBookReviews.firstWhereOrNull((r) => r.id == review.id)
+          ?? bookReviewController.userBookReviews.firstWhereOrNull((r) => r.id == review.id);
+      
+      // 如果找不到對應的 review (可能已被刪除或尚未載入)，則顯示一個空的 Container 或載入指示器
+      if (displayReview == null) {
+        return const SizedBox.shrink(); // 或 CircularProgressIndicator();
+      }
 
       final bool isLiked = displayReview.likedBy.contains(authController.currentUser.value?.uid);
 
@@ -271,7 +278,7 @@ class _BookReviewPostCard extends StatelessWidget {
               // 書籍封面圖片
               if (displayReview.bookCoverUrl != null && displayReview.bookCoverUrl!.isNotEmpty)
                 ClipRRect(
-                  borderRadius: BorderRadius.vertical(top: Radius.circular(0), bottom: Radius.circular(0)), // 圖片不需要圓角，讓卡片本身有圓角
+                  borderRadius: const BorderRadius.vertical(top: Radius.circular(0), bottom: Radius.circular(0)), // 圖片不需要圓角，讓卡片本身有圓角
                   child: Image.network(
                     displayReview.bookCoverUrl!,
                     fit: BoxFit.cover,
@@ -346,6 +353,7 @@ class _BookReviewPostCard extends StatelessWidget {
                         if (authController.currentUser.value?.uid != null) {
                           bookReviewController.toggleLike(displayReview, authController.currentUser.value!.uid);
                         } else {
+                          // [修正] 使用 theme 的顏色
                           Get.snackbar('提示', '請先登入才能按讚。', snackPosition: SnackPosition.BOTTOM, backgroundColor: theme.colorScheme.secondary, colorText: theme.colorScheme.onSecondary);
                         }
                       },
@@ -362,6 +370,7 @@ class _BookReviewPostCard extends StatelessWidget {
                     IconButton(
                       icon: Icon(Icons.send_outlined, color: theme.iconTheme.color),
                       onPressed: () {
+                        // [修正] 使用 theme 的顏色
                         Get.snackbar('功能待開發', '分享功能仍在開發中。', snackPosition: SnackPosition.BOTTOM, backgroundColor: theme.colorScheme.secondary, colorText: theme.colorScheme.onSecondary);
                       },
                     ),
@@ -370,6 +379,7 @@ class _BookReviewPostCard extends StatelessWidget {
                     IconButton(
                       icon: Icon(Icons.bookmark_border, color: theme.iconTheme.color),
                       onPressed: () {
+                        // [修正] 使用 theme 的顏色
                         Get.snackbar('功能待開發', '收藏功能仍在開發中。', snackPosition: SnackPosition.BOTTOM, backgroundColor: theme.colorScheme.secondary, colorText: theme.colorScheme.onSecondary);
                       },
                     ),

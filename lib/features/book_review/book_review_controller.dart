@@ -2,10 +2,10 @@
 // 功能：管理讀書心得相關的邏輯和資料操作，現在主要協調數據流和 UI 狀態。
 
 import 'package:get/get.dart';
-import 'package:firebase_auth/firebase_auth';
+import 'package:firebase_auth/firebase_auth.dart'; // 確保這個 import 是有效的，它會提供 FirebaseAuth 和 User 類型
 import 'package:image_picker/image_picker.dart';
 import 'dart:async';
-import 'package:flutter/material.dart'; // 引入 Material，解決 Colors 錯誤
+import 'package:flutter/material.dart'; // 引入 Material，解決 Colors 錯誤 
 
 import 'package:book_me_app/features/book_review/book_review.dart';
 import 'package:book_me_app/features/book_review/comment.dart';
@@ -64,7 +64,7 @@ class BookReviewController extends GetxController {
   }
 
   /// [優化] 開始監聽所有公開的讀書心得。
-  void startPublicReviewsListener() {
+  Future<void> startPublicReviewsListener() async { // 改為 Future<void> 方便 async/await
     isLoading.value = true; // 開始載入
     _publicReviewsSubscription?.cancel(); // 先取消舊的訂閱
     _publicReviewsSubscription = _bookReviewService.getPublicBookReviewsStream().listen(
@@ -94,11 +94,20 @@ class BookReviewController extends GetxController {
         });
       },
     );
+    // 在啟動監聽後，如果列表仍為空，可能表示載入中或沒有數據
+    // 這裡不做額外處理，因為監聽器會處理數據回傳後的 isLoading 狀態
+  }
+
+  /// 停止監聽所有公開心得並清空列表。
+  void stopPublicReviewsListener() { // [修正] 補上這個方法
+    _publicReviewsSubscription?.cancel();
+    publicBookReviews.clear();
+    print('已停止監聽公開心得並清空列表。');
   }
 
   /// [優化] 開始監聽指定用戶的讀書心得。
   /// @param userId - 要監聽心得的用戶 ID。
-  void startUserReviewsListener(String userId) {
+  Future<void> startUserReviewsListener(String userId) async { // 改為 Future<void> 方便 async/await
     isLoading.value = true; // 開始載入
     _userReviewsSubscription?.cancel(); // 先取消舊的訂閱
     _userReviewsSubscription = _bookReviewService.getUserBookReviewsStream(userId).listen(
@@ -128,6 +137,7 @@ class BookReviewController extends GetxController {
         });
       },
     );
+    // 在啟動監聽後，如果列表仍為空，可能表示載入中或沒有數據
   }
 
   /// 停止監聽用戶心得並清空列表。
@@ -139,7 +149,7 @@ class BookReviewController extends GetxController {
 
   /// [優化] 開始監聽某篇心得的所有留言。
   /// @param reviewId - 要監聽留言的心得 ID。
-  void startCommentsListener(String reviewId) {
+  Future<void> startCommentsListener(String reviewId) async { // 改為 Future<void>
     isLoading.value = true; // 開始載入
     _commentsSubscription?.cancel(); // 先取消舊的訂閱
     _commentsSubscription = _bookReviewService.getCommentsStream(reviewId).listen(
@@ -200,7 +210,9 @@ class BookReviewController extends GetxController {
       Get.snackbar('錯誤', '圖片上傳失敗，請稍後再試。', snackPosition: SnackPosition.BOTTOM, backgroundColor: Get.theme.colorScheme.error, colorText: Get.theme.colorScheme.onError);
       return null;
     } finally {
-      isLoading.value = false;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        isLoading.value = false;
+      });
     }
   }
 
@@ -220,12 +232,14 @@ class BookReviewController extends GetxController {
       }
       // 因為現在是即時監聽，數據會自動更新到 publicBookReviews 和 userBookReviews 列表中，
       // 所以這裡不需要手動 insert 了。
-      Get.snackbar('成功', '您的讀書心得已成功發布！', snackPosition: SnackPosition.BOTTOM);
+      Get.snackbar('成功', '您的讀書心得已成功發布！', snackPosition: SnackPosition.BOTTOM, backgroundColor: Get.theme.primaryColor, colorText: Get.theme.colorScheme.onPrimary);
     } catch (e) {
       errorMessage.value = '新增心得失敗: ${e.toString()}';
       Get.snackbar('錯誤', '新增心得失敗，請稍後再試。', snackPosition: SnackPosition.BOTTOM, backgroundColor: Get.theme.colorScheme.error, colorText: Get.theme.colorScheme.onError);
     } finally {
-      isLoading.value = false;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        isLoading.value = false;
+      });
     }
   }
 
@@ -237,12 +251,12 @@ class BookReviewController extends GetxController {
       Get.snackbar('提示', '請先登入才能按讚。', snackPosition: SnackPosition.BOTTOM, backgroundColor: Get.theme.colorScheme.secondary, colorText: Get.theme.colorScheme.onSecondary);
       return;
     }
-    // isLoading.value = true; // 按讚操作不顯示全屏 loading，而是局部 loading 或只顯示 UI 變化
+    // isLoading.value = true; // 按讚操作不顯示全屏 loading，而是局部 loading 或只顯示 UI 變化 
     errorMessage.value = '';
     try {
       final success = await _bookReviewService.toggleLike(review.id, userId, !review.likedBy.contains(userId));
       if (success != null) {
-        Get.snackbar('成功', review.likedBy.contains(userId) ? '您已取消對這篇心得的讚。' : '您已喜歡這篇心得！', snackPosition: SnackPosition.BOTTOM);
+        Get.snackbar('成功', review.likedBy.contains(userId) ? '您已取消對這篇心得的讚。' : '您已喜歡這篇心得！', snackPosition: SnackPosition.BOTTOM, backgroundColor: Get.theme.primaryColor, colorText: Get.theme.colorScheme.onPrimary);
         // 由於使用即時監聽，列表會自動更新，無需手動修改 publicBookReviews/userBookReviews
       } else {
         throw Exception('按讚操作失敗。');
@@ -282,12 +296,14 @@ class BookReviewController extends GetxController {
         throw Exception('新增留言失敗。');
       }
       // 因為現在是即時監聽，留言列表會自動更新
-      Get.snackbar('成功', '您的留言已發布！', snackPosition: SnackPosition.BOTTOM);
+      Get.snackbar('成功', '您的留言已發布！', snackPosition: SnackPosition.BOTTOM, backgroundColor: Get.theme.primaryColor, colorText: Get.theme.colorScheme.onPrimary);
     } catch (e) {
       errorMessage.value = '新增留言失敗: ${e.toString()}';
       Get.snackbar('錯誤', '新增留言失敗，請稍後再試。', snackPosition: SnackPosition.BOTTOM, backgroundColor: Get.theme.colorScheme.error, colorText: Get.theme.colorScheme.onError);
     } finally {
-      isLoading.value = false;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        isLoading.value = false;
+      });
     }
   }
 }

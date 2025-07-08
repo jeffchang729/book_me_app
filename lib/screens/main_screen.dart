@@ -39,9 +39,10 @@ class MainScreen extends StatelessWidget {
                 : AuthScreen(
                     initialRegisterMode: false, // 預設為登入模式
                     onLoginSuccess: () {
-                      // 登入成功後，可以選擇切換回個人檔案頁面，或回到首頁
-                      // 這裡我們讓它保持在個人檔案頁，因為用戶可能就是為了看自己的檔案而登入
-                      // 如果需要回到首頁，可以 appController.changeTabIndex(0);
+                      // 登入成功後，切換回個人檔案頁面，因為用戶可能是為了看自己的檔案而登入
+                      // 這裡使用 Get.back() 是因為 AuthScreen 是 Get.to() 推入的
+                      Get.back(); 
+                      appController.changeTabIndex(4); // 確保在登入成功後切換到個人檔案 Tab
                     },
                   ),
           ],

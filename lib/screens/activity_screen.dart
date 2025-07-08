@@ -39,6 +39,7 @@ class ActivityScreen extends StatelessWidget {
           return _buildLoginPromptPage(context, authController, appController); // [修正] 傳遞 appController
         } else {
           // 如果用戶已登入，顯示實際的活動列表
+          // TODO: 未來這裡會替換為實際的活動通知列表，從後端獲取數據
           return Center(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,

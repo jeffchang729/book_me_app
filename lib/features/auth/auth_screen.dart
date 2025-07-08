@@ -24,10 +24,11 @@ class AuthScreen extends StatelessWidget {
     // [修正] 使用 Get.put 創建或查找 AuthController
     // 並在創建時，根據 initialRegisterMode 設定其初始狀態
     final AuthController authController = Get.put(AuthController());
-    // 如果是首次進入，根據傳入的 initialRegisterMode 設定模式
-    // 避免每次 build 都重設
-    if (authController.isRegisterMode.value != initialRegisterMode) {
+    // [修正] 避免每次 build 都重設 initialRegisterMode
+    // 這裡使用 authController 的生命週期來確保只設定一次
+    if (!authController.hasBeenInitialized) { // 自定義一個標誌來判斷是否已初始化
       authController.isRegisterMode.value = initialRegisterMode;
+      authController.hasBeenInitialized = true; // 設定為已初始化
     }
 
     final TextEditingController emailController = TextEditingController();
@@ -37,9 +38,13 @@ class AuthScreen extends StatelessWidget {
 
     // 監聽登入成功，然後執行回調並關閉此畫面
     // 使用 once 而非 ever，確保只執行一次
-    once(authController.currentUser, (user) { // [修正] 使用 once 確保只執行一次
+    once(authController.currentUser, (user) { 
       if (user != null && onLoginSuccess != null) {
-        Get.until((route) => !Get.isDialogOpen! && route.isFirst); // 關閉所有彈出對話框並回到第一個路由 (MainScreen)
+        // 使用 Get.until 確保回到正確的路由層級，例如 MainScreen
+        // 判斷是否需要 Pop 當前 AuthScreen
+        if (Get.currentRoute.contains('AuthScreen')) { // 判斷當前路由是否為 AuthScreen
+          Get.back(); // Pop AuthScreen
+        }
         onLoginSuccess!(); // 執行登入成功回調
       }
     });
@@ -96,7 +101,7 @@ class AuthScreen extends StatelessWidget {
               // 錯誤訊息顯示
               Obx(() => Text(
                     authController.errorMessage.value,
-                    style: theme.textTheme.bodyMedium?.copyWith(color: Colors.red),
+                    style: theme.textTheme.bodyMedium?.copyWith(color: theme.colorScheme.error), // 使用主題錯誤色
                     textAlign: TextAlign.center,
                   )),
               const SizedBox(height: 16),
@@ -172,7 +177,7 @@ class AuthScreen extends StatelessWidget {
                 color: const Color(0xFF1877F2),
                 textColor: Colors.white,
                 onPressed: () {
-                  Get.snackbar('功能待開發', 'Facebook 登入功能仍在開發中。', snackPosition: SnackPosition.BOTTOM);
+                  Get.snackbar('功能待開發', 'Facebook 登入功能仍在開發中。', snackPosition: SnackPosition.BOTTOM, backgroundColor: theme.colorScheme.secondary, colorText: theme.colorScheme.onSecondary);
                 },
               ),
               const SizedBox(height: 16),
@@ -185,7 +190,7 @@ class AuthScreen extends StatelessWidget {
                 color: const Color(0xFF06FE06), 
                 textColor: Colors.black,
                 onPressed: () {
-                  Get.snackbar('功能待開發', 'LINE 登入功能仍在開發中，需要後端配合。', snackPosition: SnackPosition.BOTTOM);
+                  Get.snackbar('功能待開發', 'LINE 登入功能仍在開發中，需要後端配合。', snackPosition: SnackPosition.BOTTOM, backgroundColor: theme.colorScheme.secondary, colorText: theme.colorScheme.onSecondary);
                 },
               ),
             ],

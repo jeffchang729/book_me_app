@@ -1,4 +1,4 @@
-// lib/user/app_user.dart
+// lib/models/app_user.dart
 // 功能：定義應用程式用戶的資料模型，包含追蹤關係。
 
 import 'package:cloud_firestore/cloud_firestore.dart';
