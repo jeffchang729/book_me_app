@@ -7,14 +7,10 @@ D:.
 ¢x  
 ¢u¢wcore
 ¢x      app_config.dart
-¢x      app_container.dart
 ¢x      app_controller.dart
 ¢x      app_theme.dart
 ¢x      app_utils.dart
-¢x      bottom_bar_item.dart
 ¢x      dependency_injection.dart
-¢x      fake_data_service.dart
-¢x      navigation_widgets.dart
 ¢x      storage_service.dart
 ¢x      
 ¢u¢wfeatures
@@ -23,11 +19,23 @@ D:.
 ¢x  ¢x      auth_screen.dart
 ¢x  ¢x      auth_service.dart
 ¢x  ¢x      
-¢x  ¢|¢wsearch
-¢x          search_controller.dart
-¢x          search_models.dart
-¢x          search_screen.dart
+¢x  ¢u¢wbook_review
+¢x  ¢x      book_review.dart
+¢x  ¢x      book_review_controller.dart
+¢x  ¢x      book_review_detail_screen.dart
+¢x  ¢x      create_review_screen.dart
+¢x  ¢x      
+¢x  ¢u¢wsearch
+¢x  ¢x      search_controller.dart
+¢x  ¢x      search_models.dart
+¢x  ¢x      search_screen.dart
+¢x  ¢x      
+¢x  ¢|¢wuser
+¢x          user_service.dart
 ¢x          
+¢u¢wmodels
+¢x      app_user.dart
+¢x      
 ¢|¢wscreens
         activity_screen.dart
         explore_screen.dart

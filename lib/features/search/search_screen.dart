@@ -5,7 +5,7 @@ import 'package:flutter/material.dart' hide SearchController; // [修正] 隱藏
 import 'package:get/get.dart';
 import 'package:book_me_app/core/app_theme.dart'; // 引入主題設定
 import 'package:book_me_app/features/search/search_controller.dart';
-// import 'package:book_me_app/core/home/home_controller.dart'; // [移除] 不再需要 HomeController
+import 'package:book_me_app/features/search/search_models.dart'; // [修正] 新增此行，導入搜尋模型
 
 /// `SearchScreen` 提供了應用程式的搜尋功能介面。
 /// 用戶可以在這裡輸入關鍵字搜尋書籍或用戶，並查看搜尋結果。
@@ -16,7 +16,6 @@ class SearchScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final SearchController searchController = Get.find<SearchController>(); // 獲取搜尋控制器
-    // final HomeController homeController = Get.find<HomeController>(); // [移除] 不再需要 HomeController
     final TextEditingController textEditingController = TextEditingController(); // 搜尋輸入框控制器
     final theme = context.theme; // 獲取當前主題
 
@@ -40,7 +39,7 @@ class SearchScreen extends StatelessWidget {
         } else if (searchController.searchResults.isEmpty) {
           return _buildSuggestionsView(searchController, textEditingController, context); // 顯示搜尋建議
         } else {
-          return _buildResultsView(searchController, context); // [修正] 移除 homeController 參數
+          return _buildResultsView(searchController, context); // 顯示搜尋結果
         }
       }),
     );
@@ -75,7 +74,7 @@ class SearchScreen extends StatelessWidget {
   /// @param searchController - SearchController，包含搜尋結果資料。
   /// @param context - BuildContext。
   /// @returns 搜尋結果列表的 Widget。
-  Widget _buildResultsView(SearchController searchController, BuildContext context) { // [修正] 移除 homeController 參數
+  Widget _buildResultsView(SearchController searchController, BuildContext context) {
     final groupKeys = searchController.searchResults.keys.toList(); // 獲取所有結果分組的鍵
     return ListView.builder(
       padding: const EdgeInsets.only(top: 8, bottom: 80), // 列表內邊距
@@ -128,7 +127,6 @@ class SearchScreen extends StatelessWidget {
   /// @param item - 搜尋結果項目。
   /// @returns 搜尋結果卡片的 Widget。
   Widget _buildResultCard(BuildContext context, UniversalSearchResult item) {
-    // [修正] 移除 homeController 參數，因為不再需要將項目添加到主頁
     return _SearchResultItemCard(
       item: item,
       showAddButton: false, // 暫時不顯示加入按鈕

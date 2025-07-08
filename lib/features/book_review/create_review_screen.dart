@@ -1,15 +1,16 @@
-// lib/screens/create_review_screen.dart
+// lib/features/book_review/create_review_screen.dart
 // 功能：提供介面讓用戶新增一篇讀書心得，並支援書籍封面圖片上傳。
 
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart'; // 引入圖片選擇器
 import 'dart:io'; // 用於 File 類型
+import 'package:flutter/foundation.dart' show kIsWeb; // 引入 kIsWeb 判斷是否為 Web 平台
 
 import 'package:book_me_app/core/app_theme.dart'; // 引入主題設定
 import 'package:book_me_app/features/auth/auth_controller.dart'; // 引入認證控制器
 import 'package:book_me_app/features/book_review/book_review_controller.dart'; // 引入讀書心得控制器
-import 'package:book_me_app/models/book_review.dart'; // 引入讀書心得模型
+import 'package:book_me_app/features/book_review/book_review.dart'; // 引入讀書心得模型的新路徑 (已扁平化)
 import 'package:book_me_app/core/app_controller.dart'; // 引入 AppController
 
 /// `CreateReviewScreen` 提供了一個表單介面，讓用戶可以輸入並發布新的讀書心得。
@@ -32,7 +33,8 @@ class _CreateReviewScreenState extends State<CreateReviewScreen> {
   final AuthController authController = Get.find<AuthController>();
   final BookReviewController bookReviewController = Get.find<BookReviewController>();
 
-  File? _selectedImage; // 用於儲存選擇的圖片檔案
+  XFile? _selectedXFile; // 用於儲存選擇的圖片 XFile，適用於 Web 和原生
+  File? _selectedFile; // 僅用於原生平台 (File 類型)
 
   @override
   void dispose() {
@@ -52,7 +54,10 @@ class _CreateReviewScreenState extends State<CreateReviewScreen> {
 
     if (image != null) {
       setState(() {
-        _selectedImage = File(image.path); // 更新選擇的圖片檔案
+        _selectedXFile = image; // 儲存 XFile
+        if (!kIsWeb) {
+          _selectedFile = File(image.path); // 如果不是 Web，也儲存為 File 類型
+        }
       });
     }
   }
@@ -67,9 +72,9 @@ class _CreateReviewScreenState extends State<CreateReviewScreen> {
 
       // 檢查是否有選擇圖片，並處理上傳
       String? bookCoverUrl;
-      if (_selectedImage != null) {
+      if (_selectedXFile != null) {
         bookReviewController.isLoading.value = true; // 顯示載入狀態
-        bookCoverUrl = await bookReviewController.uploadBookCover(_selectedImage!);
+        bookCoverUrl = await bookReviewController.uploadBookCover(_selectedXFile!);
         if (bookCoverUrl == null) {
           Get.snackbar('上傳失敗', '書籍封面圖片上傳失敗，請重試。', snackPosition: SnackPosition.BOTTOM, backgroundColor: Colors.red, colorText: Colors.white);
           bookReviewController.isLoading.value = false;
@@ -112,14 +117,15 @@ class _CreateReviewScreenState extends State<CreateReviewScreen> {
         title: Text('新增讀書心得', style: theme.textTheme.headlineSmall),
         backgroundColor: theme.scaffoldBackgroundColor,
         elevation: 0,
-        actions: [
-          Obx(() => IconButton(
-            icon: bookReviewController.isLoading.value
-                ? const CircularProgressIndicator(color: Colors.white)
-                : Icon(Icons.check, color: theme.primaryColor),
-            onPressed: bookReviewController.isLoading.value ? null : _submitReview,
-          )),
-        ],
+        // [移除] AppBar 中的儲存按鈕
+        // actions: [
+        //   Obx(() => IconButton(
+        //     icon: bookReviewController.isLoading.value
+        //         ? const CircularProgressIndicator(color: Colors.white)
+        //         : Icon(Icons.check, color: theme.primaryColor),
+        //     onPressed: bookReviewController.isLoading.value ? null : _submitReview,
+        //   )),
+        // ],
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20.0),
@@ -137,15 +143,22 @@ class _CreateReviewScreenState extends State<CreateReviewScreen> {
                   height: 200,
                   width: double.infinity,
                   decoration: AppTheme.smartHomeNeumorphic(isConcave: true, radius: 15),
-                  child: _selectedImage != null
+                  child: _selectedXFile != null
                       ? ClipRRect(
                           borderRadius: BorderRadius.circular(15),
-                          child: Image.file(
-                            _selectedImage!,
-                            fit: BoxFit.cover,
-                            width: double.infinity,
-                            height: double.infinity,
-                          ),
+                          child: kIsWeb
+                              ? Image.network(
+                                  _selectedXFile!.path, // Web 上 XFile.path 是 blob:URL
+                                  fit: BoxFit.cover,
+                                  width: double.infinity,
+                                  height: double.infinity,
+                                )
+                              : Image.file(
+                                  _selectedFile!, // 原生上使用 File
+                                  fit: BoxFit.cover,
+                                  width: double.infinity,
+                                  height: double.infinity,
+                                ),
                         )
                       : Column(
                           mainAxisAlignment: MainAxisAlignment.center,
@@ -215,9 +228,40 @@ class _CreateReviewScreenState extends State<CreateReviewScreen> {
               Obx(() => bookReviewController.errorMessage.isNotEmpty
                   ? Text(bookReviewController.errorMessage.value, style: theme.textTheme.bodyMedium?.copyWith(color: Colors.red))
                   : const SizedBox.shrink()),
+              const SizedBox(height: 80), // 為了給底部按鈕留出空間
             ],
           ),
         ),
+      ),
+      // [新增] 底部固定按鈕
+      bottomNavigationBar: Container(
+        padding: EdgeInsets.only(
+          left: 20,
+          right: 20,
+          bottom: MediaQuery.of(context).padding.bottom + 20, // 考慮安全區域
+          top: 10,
+        ),
+        decoration: AppTheme.smartHomeNeumorphic(radius: 0), // 底部導覽列樣式
+        child: Obx(() => SizedBox(
+          width: double.infinity,
+          height: 50,
+          child: ElevatedButton(
+            onPressed: bookReviewController.isLoading.value ? null : _submitReview,
+            style: ElevatedButton.styleFrom(
+              backgroundColor: theme.primaryColor,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(15),
+              ),
+              padding: const EdgeInsets.symmetric(vertical: 12),
+            ),
+            child: bookReviewController.isLoading.value
+                ? const CircularProgressIndicator(color: Colors.white)
+                : Text(
+                    '發布', // 按鈕文字改為「發布」
+                    style: theme.textTheme.titleLarge?.copyWith(color: Colors.white),
+                  ),
+          ),
+        )),
       ),
     );
   }

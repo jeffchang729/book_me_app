@@ -1,4 +1,4 @@
-// lib/models/book_review.dart
+// lib/features/book_review/book_review.dart
 // 功能：定義讀書心得的資料模型。
 
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -62,7 +62,7 @@ class BookReview {
       'tags': tags,
       'isPublic': isPublic,
       'likesCount': likesCount,
-      'likedBy': likedBy,
+      'likedBy': likedBy, // 確保 likedBy 被正確儲存
       'commentsCount': commentsCount,
       'createdAt': Timestamp.fromDate(createdAt), // 將 DateTime 轉換為 Firestore Timestamp
       'updatedAt': Timestamp.fromDate(updatedAt),
@@ -85,7 +85,7 @@ class BookReview {
       tags: (data['tags'] as List?)?.map((item) => item as String).toList(),
       isPublic: data['isPublic'] ?? true,
       likesCount: data['likesCount'] ?? 0,
-      likedBy: (data['likedBy'] as List?)?.map((item) => item as String).toList() ?? [],
+      likedBy: (data['likedBy'] as List?)?.map((item) => item as String).toList() ?? [], // 確保 likedBy 被正確讀取
       commentsCount: data['commentsCount'] ?? 0,
       createdAt: (data['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
       updatedAt: (data['updatedAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
@@ -124,8 +124,51 @@ class BookReview {
       quotes: quotes,
       tags: tags,
       isPublic: isPublic,
+      // 新增時，likesCount, likedBy, commentsCount 預設為 0 或空
+      likesCount: 0,
+      likedBy: const [],
+      commentsCount: 0,
       createdAt: now,
       updatedAt: now,
+    );
+  }
+
+  // 複製構造函數，用於更新不可變物件的特定屬性
+  BookReview copyWith({
+    String? id,
+    String? userId,
+    String? userName,
+    String? userAvatarUrl,
+    String? bookTitle,
+    String? bookAuthor,
+    String? bookCoverUrl,
+    String? reviewContent,
+    List<String>? quotes,
+    List<String>? tags,
+    bool? isPublic,
+    int? likesCount,
+    List<String>? likedBy,
+    int? commentsCount,
+    DateTime? createdAt,
+    DateTime? updatedAt,
+  }) {
+    return BookReview(
+      id: id ?? this.id,
+      userId: userId ?? this.userId,
+      userName: userName ?? this.userName,
+      userAvatarUrl: userAvatarUrl ?? this.userAvatarUrl,
+      bookTitle: bookTitle ?? this.bookTitle,
+      bookAuthor: bookAuthor ?? this.bookAuthor,
+      bookCoverUrl: bookCoverUrl ?? this.bookCoverUrl,
+      reviewContent: reviewContent ?? this.reviewContent,
+      quotes: quotes ?? this.quotes,
+      tags: tags ?? this.tags,
+      isPublic: isPublic ?? this.isPublic,
+      likesCount: likesCount ?? this.likesCount,
+      likedBy: likedBy ?? this.likedBy,
+      commentsCount: commentsCount ?? this.commentsCount,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
     );
   }
 }
