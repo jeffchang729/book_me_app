@@ -1,38 +1,81 @@
-# === Flutter 開發過程中產生的暫存資料，不需要加入版本控制 ===
-.dart_tool/           # Dart 執行與分析工具使用的資料夾
-.packages             # Flutter 相依套件映射，會自動產生
-.pub-cache/           # 套件快取，建議每台機器自己處理
-.flutter-plugins      # 已安裝 plugin 的記錄檔，自動產生
+# 這是 Flutter 專案的標準 .gitignore 檔案
+# 它會忽略由開發工具、建置過程和作業系統自動產生的暫存檔與設定檔。
+
+# Miscellaneous
+*.class
+*.log
+*.pyc
+*.swp
+.DS_Store
+.atom/
+.buildlog
+.history
+.svn/
+migrate_working_dir/
+Thumbs.db
+
+# === Flutter & Dart: 開發過程中產生的暫存資料 ===
+.dart_tool/
+.flutter-plugins
 .flutter-plugins-dependencies
-.melos_tool/          # 使用 melos monorepo 管理時會產生的資料夾
-.metadata             # Flutter 專案的基本資訊檔案，自動產生
-.buildlog             # 建置過程的日誌，無需版本控制
+.packages
+.pub-cache/
+.pub/
+build/
 
-# === Dart 編譯後的資料，會自動產生，不需 commit ===
-build/                # Flutter 編譯輸出資料夾（Android / iOS / Web 等）
+# === IDEs: 個人化的開發環境設定 ===
+.idea/
+.vscode/
+*.iml
+*.ipr
+*.iws
+app.iml
 
-# === Android Gradle 相關資料夾與輸出 ===
-android/.gradle/      # Gradle 的快取資料
-android/app/build/    # Android 專案建置產物
+# === Android: Gradle 與建置相關輸出 ===
+# 忽略由 Android Studio 或 Gradle 自動產生的檔案
+android/app/build/
+android/.gradle/
+android/gradle/
+android/gradlew
+android/gradlew.bat
+android/local.properties
+android/key.properties
 
-# === Xcode / macOS 編譯相關輸出 ===
+# 忽略 Android Studio 的設定檔
+.idea/libraries/
+.idea/modules.xml
+.idea/workspace.xml
+.idea/navEditor.xml
+.idea/assetWizardSettings.xml
+
+# === iOS & macOS: Xcode 專案與建置相關輸出 ===
+# 忽略由 Xcode 自動產生的檔案
+ios/build/
+ios/Flutter/App.framework
+ios/Flutter/Flutter.framework
 ios/Flutter/Generated.xcconfig
-macos/Flutter/Generated.xcconfig
+ios/Flutter/flutter_export_environment.sh
+ios/Flutter/.last_build_id
+ios/Pods/
+ios/.symlinks/
+ios/Runner.xcworkspace/
+ios/Runner.xcodeproj/project.xcworkspace/
+ios/Runner.xcodeproj/xcuserdata/
+macos/build/
+macos/Flutter/ephemeral/
+macos/.symlinks/
+macos/Pods/
+macos/Runner.xcworkspace/
+macos/Runner.xcodeproj/project.xcworkspace/
+macos/Runner.xcodeproj/xcuserdata/
 
-# === VSCode / Android Studio 設定檔，不要加入版本控制 ===
-.idea/                # Android Studio 或 IntelliJ 設定資料夾
-.vscode/              # VSCode 的個人工作設定
-*.iml                 # IntelliJ 的模組檔案
+# === Firebase: 忽略本地的設定檔，只保留正確位置的 ===
+# 只有在你的專案結構與此不同時才需要修改
+!/android/app/google-services.json
+!/ios/Runner/GoogleService-Info.plist
 
-# === Flutter web 特殊設定（如使用 Web）===
-# 根據專案情況決定是否要版本控制 web/ 裡的檔案
+# === 套件鎖定檔案 (Pubspec Lockfile) ===
+# 強烈建議將 pubspec.lock 加入版本控制，以確保團隊成員使用相同版本的套件。
+# 如果你正在開發一個「套件 (Package)」而非「應用程式 (App)」，才考慮取消下面這行的註解。
+# pubspec.lock
 
-# === Firebase 設定檔：只保留正確位置，其餘忽略 ===
-google-services.json       # 忽略根目錄的
-!android/app/google-services.json  # 但保留 Android 專案內正確位置的設定檔
-
-# === CORS 設定：如果你想保留 cors.json，可以註解掉這行 ===
-# cors.json
-
-# === Flutter 相依套件鎖定檔案（可版本控制）===
-# pubspec.lock 通常建議一起版本控制，除非是套件 library 而非 app

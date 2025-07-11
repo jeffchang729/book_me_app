@@ -23,6 +23,8 @@ D:.
 ¢x  ¢x      book_review.dart
 ¢x  ¢x      book_review_controller.dart
 ¢x  ¢x      book_review_detail_screen.dart
+¢x  ¢x      book_review_service.dart
+¢x  ¢x      comment.dart
 ¢x  ¢x      create_review_screen.dart
 ¢x  ¢x      
 ¢x  ¢u¢wsearch

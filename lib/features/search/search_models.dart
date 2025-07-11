@@ -1,8 +1,10 @@
 // lib/features/search/search_models.dart
-// 功能：定義應用程式中通用的搜尋結果資料模型。
+// 功能：定義應用程式中通用的搜尋結果資料模型，並新增具體的書籍與用戶模型。
+
+import 'package:book_me_app/models/app_user.dart'; // 引入 AppUser 模型
+import 'package:book_me_app/features/book_review/book_review.dart'; // 引入 BookReview 模型
 
 /// 定義搜尋結果的類型。
-/// 由於 BookMe 專案已移除天氣、股票、新聞功能，此處僅保留通用類型。
 enum SearchResultType {
   book, // 書籍搜尋結果
   user, // 用戶搜尋結果
@@ -16,8 +18,8 @@ abstract class UniversalSearchResult {
   SearchResultType get type; // 搜尋結果類型
   String get title; // 標題
   String get subtitle; // 副標題
-  dynamic get data; // 原始資料物件 (可以是任何類型，具體由子類別決定)
-  int get relevance; // 相關性分數 (數字越大表示越相關)
+  dynamic get data; // 原始資料物件
+  int get relevance; // 相關性分數
 
   const UniversalSearchResult();
 
@@ -25,87 +27,35 @@ abstract class UniversalSearchResult {
   Map<String, dynamic> toJson();
 
   /// 從 JSON 格式創建 `UniversalSearchResult` 實例的工廠建構子。
-  /// 根據 `type` 欄位來判斷並創建對應的子類別實例。
   factory UniversalSearchResult.fromJson(Map<String, dynamic> json) {
     final typeString = json['type'] as String?;
     final type = SearchResultType.values.firstWhere(
       (e) => e.toString() == typeString,
-      orElse: () => SearchResultType.unsupported, // 如果類型不支援，則使用 unsupported
+      orElse: () => SearchResultType.unsupported,
     );
 
     try {
       switch (type) {
         case SearchResultType.book:
-          // TODO: 未來實作 BookSearchResultItem.fromJson(json)
-          // return BookSearchResultItem.fromJson(json);
-          return UnsupportedSearchResultItem.fromJson(json); // 暫時回傳不支援類型
+          return BookSearchResultItem.fromJson(json); // [實作] 使用 BookSearchResultItem
         case SearchResultType.user:
-          // TODO: 未來實作 UserSearchResultItem.fromJson(json)
-          // return UserSearchResultItem.fromJson(json);
-          return UnsupportedSearchResultItem.fromJson(json); // 暫時回傳不支援類型
+          return UserSearchResultItem.fromJson(json); // [實作] 使用 UserSearchResultItem
         default:
-          return UnsupportedSearchResultItem.fromJson(json); // 預設為不支援類型
+          return UnsupportedSearchResultItem.fromJson(json);
       }
     } catch (e, stackTrace) {
-      // 捕獲反序列化錯誤，並印出詳細資訊以供偵錯
       print('==================== DESERIALIZATION ERROR ====================');
       print('== ❌ [錯誤] 無法解析類型為: $type 的 JSON 資料');
       print('== [例外] $e');
       print('== [堆疊追蹤] $stackTrace');
       print('== [問題 JSON] $json');
       print('===============================================================');
-      return UnsupportedSearchResultItem.fromJson(json); // 錯誤時回傳不支援類型
+      return UnsupportedSearchResultItem.fromJson(json);
     }
   }
 }
 
-/// `UnsupportedSearchResultItem` 代表一個無法識別或不支援的搜尋結果。
-/// 用於處理未知或錯誤的資料類型，避免應用程式崩潰。
-class UnsupportedSearchResultItem extends UniversalSearchResult {
-  @override
-  final String id;
-  @override
-  final SearchResultType type = SearchResultType.unsupported;
-  @override
-  final String title;
-  @override
-  final String subtitle;
-  @override
-  final Map<String, dynamic> data; // 儲存原始的 JSON 資料
-  @override
-  final int relevance;
-
-  const UnsupportedSearchResultItem({
-    required this.id,
-    required this.title,
-    required this.subtitle,
-    required this.data,
-    this.relevance = 0, // 不支援的項目相關性為 0
-  });
-
-  @override
-  Map<String, dynamic> toJson() => {
-        'id': id,
-        'type': type.toString(),
-        'title': title,
-        'subtitle': subtitle,
-        'data': data,
-        'relevance': relevance,
-      };
-
-  /// 從 JSON 格式創建 `UnsupportedSearchResultItem` 實例的工廠建構子。
-  factory UnsupportedSearchResultItem.fromJson(Map<String, dynamic> json) {
-    return UnsupportedSearchResultItem(
-      id: json['id'] ?? 'unknown_${DateTime.now().millisecondsSinceEpoch}', // 如果沒有 ID，則生成一個時間戳 ID
-      title: json['title'] ?? '未知項目', // 預設標題
-      subtitle: json['subtitle'] ?? '此資料已損毀或不支援。', // 預設副標題
-      data: const {}, // 預設為空資料
-    );
-  }
-}
-
-// TODO: 未來新增 BookSearchResultItem 和 UserSearchResultItem
-/*
+/// [新增] 書籍搜尋結果項目
 class BookSearchResultItem extends UniversalSearchResult {
   @override
   final String id;
@@ -116,9 +66,10 @@ class BookSearchResultItem extends UniversalSearchResult {
   @override
   final String subtitle;
   @override
-  final BookData data; // 假設 BookData 是您定義的書籍資料模型
+  final Map<String, dynamic> data; // 可儲存如 bookId, coverUrl 等原始資訊
   @override
   final int relevance;
+  final String? recommendationReason; // AI 推薦理由
 
   const BookSearchResultItem({
     required this.id,
@@ -126,6 +77,7 @@ class BookSearchResultItem extends UniversalSearchResult {
     required this.subtitle,
     required this.data,
     this.relevance = 100,
+    this.recommendationReason,
   });
 
   @override
@@ -134,21 +86,24 @@ class BookSearchResultItem extends UniversalSearchResult {
         'type': type.toString(),
         'title': title,
         'subtitle': subtitle,
-        'data': data.toJson(),
+        'data': data,
         'relevance': relevance,
+        'recommendationReason': recommendationReason,
       };
 
   factory BookSearchResultItem.fromJson(Map<String, dynamic> json) {
     return BookSearchResultItem(
-      id: json['id'],
-      title: json['title'],
-      subtitle: json['subtitle'],
-      data: BookData.fromJson(json['data']), // 假設您有 BookData.fromJson
+      id: json['id'] ?? '',
+      title: json['title'] ?? '無標題書籍',
+      subtitle: json['subtitle'] ?? '未知作者',
+      data: (json['data'] as Map<String, dynamic>?) ?? {},
       relevance: json['relevance'] ?? 100,
+      recommendationReason: json['recommendationReason'],
     );
   }
 }
 
+/// [新增] 用戶搜尋結果項目
 class UserSearchResultItem extends UniversalSearchResult {
   @override
   final String id;
@@ -159,7 +114,7 @@ class UserSearchResultItem extends UniversalSearchResult {
   @override
   final String subtitle;
   @override
-  final UserProfileData data; // 假設 UserProfileData 是您定義的用戶資料模型
+  final AppUser data; // 直接使用 AppUser 模型
   @override
   final int relevance;
 
@@ -184,11 +139,54 @@ class UserSearchResultItem extends UniversalSearchResult {
   factory UserSearchResultItem.fromJson(Map<String, dynamic> json) {
     return UserSearchResultItem(
       id: json['id'],
-      title: json['title'],
-      subtitle: json['subtitle'],
-      data: UserProfileData.fromJson(json['data']), // 假設您有 UserProfileData.fromJson
+      title: json['title'] ?? '匿名用戶',
+      subtitle: json['subtitle'] ?? '',
+      data: AppUser.fromDocument(json['data']),
       relevance: json['relevance'] ?? 90,
     );
   }
 }
-*/
+
+
+/// `UnsupportedSearchResultItem` 代表一個無法識別或不支援的搜尋結果。
+class UnsupportedSearchResultItem extends UniversalSearchResult {
+  @override
+  final String id;
+  @override
+  final SearchResultType type = SearchResultType.unsupported;
+  @override
+  final String title;
+  @override
+  final String subtitle;
+  @override
+  final Map<String, dynamic> data;
+  @override
+  final int relevance;
+
+  const UnsupportedSearchResultItem({
+    required this.id,
+    required this.title,
+    required this.subtitle,
+    required this.data,
+    this.relevance = 0,
+  });
+
+  @override
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        'type': type.toString(),
+        'title': title,
+        'subtitle': subtitle,
+        'data': data,
+        'relevance': relevance,
+      };
+
+  factory UnsupportedSearchResultItem.fromJson(Map<String, dynamic> json) {
+    return UnsupportedSearchResultItem(
+      id: json['id'] ?? 'unknown_${DateTime.now().millisecondsSinceEpoch}',
+      title: json['title'] ?? '未知項目',
+      subtitle: json['subtitle'] ?? '此資料已損毀或不支援。',
+      data: (json['data'] as Map<String, dynamic>?) ?? {},
+    );
+  }
+}
