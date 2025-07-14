@@ -1,5 +1,5 @@
 // lib/features/search/book_detail_screen.dart
-// 功能：在應用程式內部顯示單本書籍的詳細資訊。
+// [修正版] 功能：在應用程式內部顯示單本書籍的詳細資訊。
 
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -24,18 +24,19 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
   @override
   void initState() {
     super.initState();
-    // 在頁面初始化時，開始獲取書籍詳細資料
     _bookDetailsFuture = _searchService.getBookDetails(widget.bookId);
   }
 
-  /// 建立指向後端圖片代理服務的 URL
   String? _getProxiedImageUrl(String? originalUrl) {
     if (originalUrl == null || originalUrl.isEmpty) {
       return null;
     }
     String getApiBaseUrl() {
-      const String cloudRunUrl = ''; 
+      // [重要] 填入我們部署好的 Cloud Run 服務網址
+      const String cloudRunUrl = 'https://recommendation-service-613638259363.asia-east1.run.app'; 
       if (cloudRunUrl.isNotEmpty) return cloudRunUrl;
+      
+      // ----- 以下為本機開發的備用邏輯 (保持不變) -----
       if (kIsWeb) return 'http://localhost:3000';
       if (Platform.isAndroid) return 'http://10.0.2.2:3000';
       return 'http://localhost:3000';
@@ -62,12 +63,10 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
       body: FutureBuilder<Map<String, dynamic>>(
         future: _bookDetailsFuture,
         builder: (context, snapshot) {
-          // --- 處理載入中狀態 ---
           if (snapshot.connectionState == ConnectionState.waiting) {
             return Center(child: CircularProgressIndicator(color: theme.primaryColor));
           }
 
-          // --- 處理錯誤狀態 ---
           if (snapshot.hasError || !snapshot.hasData || snapshot.data!.isEmpty) {
             return Center(
               child: Column(
@@ -83,7 +82,6 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
             );
           }
 
-          // --- 處理成功狀態 ---
           final book = snapshot.data!;
           final volumeInfo = book['volumeInfo'] as Map<String, dynamic>? ?? {};
           final title = volumeInfo['title'] ?? '無標題';
@@ -99,7 +97,6 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                // 書籍封面
                 Container(
                   decoration: BoxDecoration(
                     boxShadow: [
@@ -126,14 +123,12 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
                   ),
                 ),
                 const SizedBox(height: 24),
-                // 書名
                 Text(
                   title,
                   textAlign: TextAlign.center,
                   style: theme.textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(height: 8),
-                // 作者
                 Text(
                   authors,
                   textAlign: TextAlign.center,
@@ -142,7 +137,6 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
                 const SizedBox(height: 24),
                 const Divider(),
                 const SizedBox(height: 24),
-                // 內容簡介標題
                 Align(
                   alignment: Alignment.centerLeft,
                   child: Text(
@@ -151,13 +145,11 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
                   ),
                 ),
                 const SizedBox(height: 12),
-                // 內容簡介
                 Text(
-                  description.replaceAll(RegExp(r'<[^>]*>'), ''), // 移除 HTML 標籤
+                  description.replaceAll(RegExp(r'<[^>]*>'), ''),
                   style: theme.textTheme.bodyLarge?.copyWith(height: 1.6),
                 ),
                 const SizedBox(height: 40),
-                // 未來可加入「撰寫心得」按鈕
                 ElevatedButton.icon(
                   icon: const Icon(Icons.edit_note),
                   label: const Text('我讀完了，撰寫心得'),

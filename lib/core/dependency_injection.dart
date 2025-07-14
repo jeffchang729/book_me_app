@@ -10,7 +10,8 @@ import 'package:book_me_app/core/app_controller.dart';
 import 'package:book_me_app/features/book_review/book_review_controller.dart';
 import 'package:book_me_app/features/user/user_service.dart';
 import 'package:book_me_app/features/book_review/book_review_service.dart';
-import 'package:book_me_app/features/search/search_service.dart'; // [新增] 引入搜尋服務
+import 'package:book_me_app/features/search/search_service.dart';
+import 'package:book_me_app/core/theme_service.dart'; // [新增] 引入主題服務
 
 /// 依賴注入設定
 class DependencyInjection {
@@ -22,9 +23,12 @@ class DependencyInjection {
       return storageService;
     });
 
+    // [新增] 主題服務 (需要在 AppController 之前注入)
+    Get.lazyPut<ThemeService>(() => ThemeService(), fenix: true);
+
     // 認證服務與控制器
     Get.lazyPut<AuthService>(() => AuthService(), fenix: true);
-    Get.lazyPut<AuthController>(() => AuthController(), fenix: true); 
+    Get.lazyPut<AuthController>(() => AuthController(), fenix: true);
 
     // 用戶服務
     Get.lazyPut<UserService>(() => UserService(), fenix: true);
@@ -34,16 +38,16 @@ class DependencyInjection {
 
     // 讀書心得控制器
     Get.lazyPut<BookReviewController>(() => BookReviewController(), fenix: true);
-    
-    // 應用程式通用控制器
-    Get.lazyPut<AppController>(() => AppController(), fenix: true); 
 
-    // [新增] 搜尋服務 (在 SearchController 之前)
+    // 應用程式通用控制器 (現在會依賴 ThemeService)
+    Get.lazyPut<AppController>(() => AppController(), fenix: true);
+
+    // 搜尋服務
     Get.lazyPut<SearchService>(() => SearchService(), fenix: true);
 
-    // 搜尋控制器 (現在會依賴 SearchService)
+    // 搜尋控制器
     Get.lazyPut<SearchController>(() => SearchController(), fenix: true);
-    
-    print("所有核心依賴注入完成 (包含 BookMe 基礎認證服務及用戶服務)。");
+
+    print("所有核心依賴注入完成 (包含全新的主題服務)。");
   }
 }
