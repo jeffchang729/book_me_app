@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:get/get.dart';
 import 'package:book_me_app/firebase_options.dart';
-import 'package:book_me_app/screens/main_screen.dart';
+import 'package:book_me_app/features/navigation/main_screen.dart';
 import 'package:book_me_app/core/dependency_injection.dart';
 import 'package:book_me_app/core/app_controller.dart';
 

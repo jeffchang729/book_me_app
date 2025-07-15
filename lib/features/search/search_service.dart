@@ -1,40 +1,24 @@
 // lib/features/search/search_service.dart
-// [最終修正版] 功能：提供與後端搜尋、推薦功能相關的 API 請求服務，並加入詳細日誌。
+// [改造完成] 功能：移除本地的 URL 判斷邏輯，改為從 AppConfig 讀取統一的 API Base URL。
 
 import 'package:dio/dio.dart';
-import 'package:flutter/foundation.dart';
-import 'dart:io';
-
 import 'package:book_me_app/features/search/search_models.dart';
+import 'package:book_me_app/core/app_config.dart'; // [新增] 引入我們新的設定檔
 
 class SearchService {
   final Dio _dio = Dio();
   
+  // [移除] 不再需要 _apiBaseUrl 這個 getter
+  /*
   String get _apiBaseUrl {
-    // [重要] 填入我們部署好的 Cloud Run 服務網址
-    const String cloudRunUrl = 'https://recommendation-service-613638259363.asia-east1.run.app';
-
-    if (cloudRunUrl.isNotEmpty) {
-      return cloudRunUrl;
-    }
-
-    // ----- 以下為本機開發的備用邏輯 (保持不變) -----
-    const String realDeviceIp = '';
-    if (kDebugMode && !kIsWeb && realDeviceIp.isNotEmpty) {
-      return 'http://$realDeviceIp:3000';
-    }
-    if (kIsWeb) {
-      return 'http://localhost:3000';
-    } else if (Platform.isAndroid) {
-      return 'http://10.0.2.2:3000';
-    } else {
-      return 'http://localhost:3000';
-    }
+    // ... 複雜的 if/else 判斷 ...
   }
+  */
 
-  /// [修正] 向後端發送 AI 書籍推薦請求。
+  /// 向後端發送 AI 書籍推薦請求。
   Future<List<BookSearchResultItem>> getAiBookRecommendations(String query) async {
-    final String endpoint = '$_apiBaseUrl/api/recommendations/book';
+    // [改造] 直接使用 AppConfig.apiBaseUrl
+    final String endpoint = '${AppConfig.apiBaseUrl}/api/recommendations/book';
     print('--- [SearchService] 發起 AI 推薦請求 ---');
     print('請求 URL: $endpoint');
     print('請求內容 (Query): "$query"');
@@ -49,10 +33,8 @@ class SearchService {
         ),
       );
 
-      // [修正] 後端成功建立推薦列表是回傳 201 Created
       if ((response.statusCode == 200 || response.statusCode == 201) && response.data is List) {
         final List<dynamic> responseData = response.data;
-        // [修正] 使用您既有的 BookSearchResultItem.fromJson 來解析
         return responseData
             .map((item) => BookSearchResultItem.fromJson(item as Map<String, dynamic>))
             .toList();
@@ -71,8 +53,9 @@ class SearchService {
     }
   }
 
-  /// [保持不變] 獲取單本書籍的詳細資訊
+  /// 獲取單本書籍的詳細資訊
   Future<Map<String, dynamic>> getBookDetails(String bookId) async {
+    // Google Books API 的 URL 保持不變，因為它不是我們的後端服務
     final String endpoint = 'https://www.googleapis.com/books/v1/volumes/$bookId';
     print('--- [SearchService] 獲取書籍詳情 ---');
     print('請求 URL: $endpoint');

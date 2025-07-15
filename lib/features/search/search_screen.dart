@@ -1,173 +1,292 @@
 // lib/features/search/search_screen.dart
-// [架構改造] 使用 AppController 來獲取動態主題樣式。
+// [修正完成] 功能：AI書籍推薦搜尋頁面，補上缺失的方法實作。
 
-import 'package:flutter/material.dart';
+import 'package:flutter/material.dart' hide SearchController;
 import 'package:get/get.dart';
 import 'package:book_me_app/features/search/search_controller.dart';
-import 'package:book_me_app/core/app_controller.dart'; // [新增]
-import 'package:book_me_app/core/themes/i_app_theme.dart'; // [新增]
+import 'package:book_me_app/core/app_controller.dart';
+import 'package:book_me_app/core/themes/i_app_theme.dart';
 import 'package:book_me_app/features/search/book_detail_screen.dart';
+import 'package:book_me_app/features/search/search_models.dart';
 
-class SearchScreen extends StatelessWidget {
+class SearchScreen extends StatefulWidget {
   const SearchScreen({super.key});
 
   @override
+  State<SearchScreen> createState() => _SearchScreenState();
+}
+
+class _SearchScreenState extends State<SearchScreen> {
+  final SearchController searchController = Get.find<SearchController>();
+  final AppController appController = Get.find<AppController>();
+  final TextEditingController textEditingController = TextEditingController();
+
+  final ValueNotifier<bool> _isInputEmpty = ValueNotifier<bool>(true);
+
+  @override
+  void initState() {
+    super.initState();
+    textEditingController.addListener(() {
+      _isInputEmpty.value = textEditingController.text.isEmpty;
+    });
+  }
+
+  @override
+  void dispose() {
+    textEditingController.dispose();
+    _isInputEmpty.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final SearchController searchController = Get.find<SearchController>();
-    final AppController appController = Get.find<AppController>(); // [新增]
-    final TextEditingController textEditingController = TextEditingController();
+    final IAppTheme theme = appController.currentTheme.value;
 
-    return Obx(() { // [新增] 用 Obx 包裹
-      final IAppTheme theme = appController.currentTheme.value;
-      final ThemeData themeData = theme.themeData;
-
-      return Scaffold(
-        backgroundColor: themeData.scaffoldBackgroundColor,
-        body: SafeArea(
-          child: Column(
+    return Scaffold(
+      backgroundColor: theme.primaryBackgroundColor,
+      body: Stack(
+        children: [
+          Column(
             children: [
-              // 搜尋框
-              Padding(
-                padding: const EdgeInsets.all(16.0),
+              const SizedBox(height: 120),
+              Expanded(
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  // [修正]
-                  decoration: theme.neumorphicBoxDecoration(isConcave: true, radius: 24),
-                  child: TextField(
-                    controller: textEditingController,
-                    style: themeData.textTheme.bodyLarge,
-                    decoration: InputDecoration(
-                      hintText: '想成為什麼樣的人？例如：有創意的領導者',
-                      hintStyle: themeData.textTheme.bodyMedium,
-                      border: InputBorder.none,
-                      icon: Icon(Icons.search, color: themeData.iconTheme.color),
-                      suffixIcon: IconButton(
-                        icon: Icon(Icons.send, color: themeData.primaryColor),
-                        onPressed: () {
-                          if (textEditingController.text.isNotEmpty) {
-                            searchController.searchBooks(textEditingController.text);
-                            FocusScope.of(context).unfocus();
-                          }
-                        },
-                      ),
+                  decoration: BoxDecoration(
+                    color: theme.secondaryBackgroundColor,
+                    borderRadius: const BorderRadius.only(
+                      topLeft: Radius.circular(40),
+                      topRight: Radius.circular(40),
                     ),
-                    onSubmitted: (value) {
-                      if (value.isNotEmpty) {
-                        searchController.searchBooks(value);
-                      }
-                    },
                   ),
                 ),
               ),
-
-              // 狀態顯示
-              Expanded(
-                child: Obx(() {
-                  if (searchController.isLoading.value) {
-                    return Center(child: CircularProgressIndicator(color: themeData.primaryColor));
-                  } else if (searchController.errorMessage.value.isNotEmpty) {
-                    return Center(
-                      child: Padding(
-                        padding: const EdgeInsets.all(16.0),
-                        child: Text(
-                          searchController.errorMessage.value,
-                          style: themeData.textTheme.bodyLarge?.copyWith(color: themeData.colorScheme.error),
-                          textAlign: TextAlign.center,
-                        ),
-                      ),
-                    );
-                  } else if (searchController.searchResults.isEmpty) {
-                    return Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(Icons.auto_stories_outlined, size: 80, color: themeData.iconTheme.color?.withOpacity(0.5)),
-                          const SizedBox(height: 20),
-                          Text('探索，從一個問題開始', style: themeData.textTheme.headlineSmall),
-                          const SizedBox(height: 10),
-                          Text(
-                            '輸入您的目標或感興趣的領域，\n讓 AI 為您推薦最適合的書籍。',
-                            style: themeData.textTheme.bodyMedium,
-                            textAlign: TextAlign.center,
-                          ),
-                        ],
-                      ),
-                    );
-                  } else {
-                    // 搜尋結果列表
-                    return ListView.builder(
-                      itemCount: searchController.searchResults.length,
-                      itemBuilder: (context, index) {
-                        final result = searchController.searchResults[index];
-                        return GestureDetector(
-                          onTap: () {
-                            Get.to(() => BookDetailScreen(searchResult: result));
-                          },
-                          child: Container(
-                            margin: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
-                            padding: const EdgeInsets.all(12.0),
-                            // [修正]
-                            decoration: theme.neumorphicBoxDecoration(radius: 15),
-                            child: Row(
-                              children: [
-                                // 書籍封面
-                                ClipRRect(
-                                  borderRadius: BorderRadius.circular(8),
-                                  child: Image.network(
-                                    result.thumbnailLink,
-                                    width: 80,
-                                    height: 120,
-                                    fit: BoxFit.cover,
-                                    errorBuilder: (context, error, stackTrace) => Container(
-                                      width: 80,
-                                      height: 120,
-                                      color: themeData.primaryColor.withOpacity(0.1),
-                                      child: Icon(Icons.book_outlined, color: themeData.iconTheme.color),
-                                    ),
-                                  ),
-                                ),
-                                const SizedBox(width: 16),
-                                // 書籍資訊
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        result.title,
-                                        style: themeData.textTheme.titleLarge,
-                                        maxLines: 2,
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
-                                      const SizedBox(height: 4),
-                                      Text(
-                                        result.authors.join(', '),
-                                        style: themeData.textTheme.bodyMedium,
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
-                                      const SizedBox(height: 8),
-                                      Text(
-                                        result.recommendationReason,
-                                        style: themeData.textTheme.bodyMedium?.copyWith(fontStyle: FontStyle.italic, color: themeData.primaryColor),
-                                        maxLines: 3,
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        );
-                      },
-                    );
-                  }
-                }),
-              ),
             ],
           ),
+          SafeArea(
+            child: Column(
+              children: [
+                _buildSearchBar(theme, context),
+                Expanded(
+                  child: Obx(() {
+                    if (searchController.isLoading.value) {
+                      return Center(child: CircularProgressIndicator(color: theme.themeData.primaryColor));
+                    }
+                    if (searchController.isInitialState.value) {
+                      return _buildSearchSuggestions(theme);
+                    }
+                    if (searchController.errorMessage.value.isNotEmpty && searchController.searchResults.isEmpty) {
+                      return _buildStatusIndicator(theme, Icons.error_outline_rounded, '發生錯誤', searchController.errorMessage.value);
+                    }
+                    if (searchController.searchResults.isEmpty) {
+                      return _buildStatusIndicator(theme, Icons.search_off_rounded, '無結果', '找不到相關的書籍推薦，試試換個問法？');
+                    }
+                    return _buildResultsList(theme);
+                  }),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSearchBar(IAppTheme theme, BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.all(16.0),
+      child: Container(
+        height: 60,
+        padding: const EdgeInsets.symmetric(horizontal: 20),
+        decoration: theme.neumorphicBoxDecoration(
+          isConcave: true, radius: 30, color: theme.primaryBackgroundColor,
         ),
-      );
-    });
+        child: Center(
+          child: TextField(
+            controller: textEditingController,
+            style: theme.themeData.textTheme.bodyLarge,
+            decoration: InputDecoration(
+              hintText: '想成為什麼樣的人？',
+              hintStyle: theme.themeData.textTheme.bodyMedium,
+              border: InputBorder.none,
+              icon: Icon(Icons.search, color: theme.themeData.iconTheme.color),
+              suffixIcon: ValueListenableBuilder<bool>(
+                valueListenable: _isInputEmpty,
+                builder: (context, isEmpty, child) {
+                  if (isEmpty) {
+                    return const SizedBox.shrink();
+                  }
+                  return IconButton(
+                    icon: Icon(Icons.clear, color: theme.themeData.iconTheme.color),
+                    onPressed: () {
+                      textEditingController.clear();
+                      searchController.clearSearch();
+                      FocusScope.of(context).unfocus();
+                    },
+                  );
+                },
+              ),
+            ),
+            onSubmitted: (value) {
+              if (value.isNotEmpty) {
+                searchController.performSearch(value);
+              }
+            },
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSearchSuggestions(IAppTheme theme) {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('試試看...', style: theme.themeData.textTheme.titleLarge),
+          const SizedBox(height: 16),
+          Wrap(
+            spacing: 12,
+            runSpacing: 12,
+            children: searchController.searchSuggestions.map((suggestion) {
+              return GestureDetector(
+                onTap: () {
+                  textEditingController.text = suggestion;
+                  searchController.performSearch(suggestion);
+                  FocusScope.of(context).unfocus();
+                },
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  decoration: theme.neumorphicBoxDecoration(
+                    radius: 15,
+                    color: theme.secondaryBackgroundColor,
+                  ),
+                  child: Text(suggestion, style: theme.themeData.textTheme.bodyLarge),
+                ),
+              );
+            }).toList(),
+          )
+        ],
+      ),
+    );
+  }
+  
+  // [補上實作] 搜尋結果列表 Widget
+  Widget _buildResultsList(IAppTheme theme) {
+    return ListView.builder(
+      padding: const EdgeInsets.all(16.0),
+      itemCount: searchController.searchResults.length,
+      itemBuilder: (context, index) {
+        final result = searchController.searchResults[index];
+        return GestureDetector(
+          onTap: () {
+            Get.to(() => BookDetailScreen(bookId: result.id));
+          },
+          child: _SearchResultCard(result: result, theme: theme),
+        );
+      },
+    );
+  }
+
+  // [補上實作] 狀態指示器 Widget (用於空狀態、錯誤等)
+  Widget _buildStatusIndicator(IAppTheme theme, IconData icon, String title, String subtitle) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(icon, size: 80, color: theme.themeData.iconTheme.color?.withOpacity(0.5)),
+          const SizedBox(height: 20),
+          Text(title, style: theme.themeData.textTheme.headlineSmall),
+          const SizedBox(height: 10),
+          Text(
+            subtitle,
+            style: theme.themeData.textTheme.bodyMedium,
+            textAlign: TextAlign.center,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _SearchResultCard extends StatelessWidget {
+  const _SearchResultCard({
+    required this.result,
+    required this.theme,
+  });
+
+  final BookSearchResultItem result;
+  final IAppTheme theme;
+
+  @override
+  Widget build(BuildContext context) {
+    final coverUrl = (result.data['volumeInfo'] as Map<String, dynamic>?)?['imageLinks']
+            as Map<String, dynamic>? ?? {};
+    final thumbnailUrl = coverUrl['thumbnail'] ?? coverUrl['smallThumbnail'];
+
+    return Container(
+      margin: const EdgeInsets.symmetric(vertical: 8.0),
+      padding: const EdgeInsets.all(16.0),
+      decoration: theme.neumorphicBoxDecoration(
+        radius: 20,
+        color: theme.secondaryBackgroundColor,
+      ),
+      child: Row(
+        children: [
+          ClipRRect(
+            borderRadius: BorderRadius.circular(12),
+            child: Image.network(
+              thumbnailUrl ?? '',
+              width: 80,
+              height: 120,
+              fit: BoxFit.cover,
+              errorBuilder: (context, error, stackTrace) => Container(
+                width: 80,
+                height: 120,
+                decoration: theme.neumorphicBoxDecoration(
+                  radius: 12,
+                  isConcave: true,
+                  color: theme.secondaryBackgroundColor
+                ),
+                child: Icon(Icons.book_outlined, color: theme.themeData.iconTheme.color),
+              ),
+            ),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  result.title,
+                  style: theme.themeData.textTheme.titleLarge,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  result.subtitle,
+                  style: theme.themeData.textTheme.bodyMedium,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                if (result.recommendationReason != null && result.recommendationReason!.isNotEmpty) ...[
+                  const SizedBox(height: 12),
+                  Text(
+                    'AI 推薦理由：${result.recommendationReason}',
+                    style: theme.themeData.textTheme.bodySmall?.copyWith(
+                      fontStyle: FontStyle.italic,
+                      color: theme.themeData.primaryColor.withOpacity(0.9)
+                    ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ]
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }
